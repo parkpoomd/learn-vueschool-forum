@@ -11,7 +11,7 @@
       </router-link>
     </h1>
     <p>
-      By <a href="#" class="link-unstyled">{{ thread.author.name }}</a
+      By <a href="#" class="link-unstyled">{{ thread.author?.name }}</a
       >, <AppDate :timestamp="thread.publishedAt" />.
       <span
         style="float: right; margin-top: 2px"
@@ -31,6 +31,7 @@
 <script>
 import PostList from '@/components/PostList'
 import PostEditor from '@/components/PostEditor'
+
 export default {
   name: 'ThreadShow',
   components: {
@@ -65,6 +66,20 @@ export default {
       }
       this.$store.dispatch('createPost', post)
     },
+  },
+  async created() {
+    // fetch the thread
+    const thread = await this.$store.dispatch('setThread', { id: this.id })
+
+    // fetch the user
+    this.$store.dispatch('setUser', { id: thread.userId })
+
+    // fetch the posts
+    thread.posts.forEach(async (postId) => {
+      const post = await this.$store.dispatch('setPost', { id: postId })
+      // fetch the user for each post
+      this.$store.dispatch('setUser', { id: post.userId })
+    })
   },
 }
 </script>
